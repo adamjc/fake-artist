@@ -8,7 +8,7 @@
     <div id="room-id-output"></div>
     <script>
         const socket = io('http://localhost:3000')
-        socket.on('hello', console.log)
+
         function newGame () {
           console.log('new game')
           socket.emit('game:new')

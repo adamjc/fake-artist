@@ -4,10 +4,13 @@
   "description": "An online version of [A Fake Artist Goes to New York](https://boardgamegeek.com/boardgame/135779/fake-artist-goes-new-york)",
   "main": "index.js",
   "dependencies": {
+    "aws-sdk": "^2.540.0",
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "redis": "^2.8.0"
+  },
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
