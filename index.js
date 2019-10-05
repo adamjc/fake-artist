@@ -5,15 +5,19 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const AWS = require('aws-sdk')
 const hexgen = require('hex-generator')
+const config = require('config')
+const db = new AWS.DynamoDB.DocumentClient()
 
 AWS.config.update({
   region: 'eu-west-1',
-  endpoint: 'dynamodb.eu-west-1.amazonaws.com'
+  endpoint: config.get('endpoint')
 })
 
-const db = new AWS.DynamoDB.DocumentClient()
 
-app.get('/', (req, res, next) => {
+
+
+
+app.get('/', (_, res) => {
   res.sendFile(path.join(process.cwd(), './index.html'))
 })
 
@@ -50,7 +54,6 @@ io.on('connection', socket => {
 
   socket.on('game:start', () => {
     console.log('starting a game')
-    
   })
 
   socket.on('game:join', id => {
