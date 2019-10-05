@@ -18,7 +18,7 @@ async function createTable () {
     }]
   }
 
-  return db.createTable(newTableQuery).promise().catch(err => console.log)
+  return db.createTable(newTableQuery).promise().catch(console.log)
 }
 
 module.exports = {
