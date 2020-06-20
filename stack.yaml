@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
+Resources:
+  # Static Files
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: fake-artist
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  API:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: Fake-Artist-API
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpress: $request.body.message
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+      Properties:
+        ApiId: !Ref API
+        ApiKeyRequired: False
+        RouteKey: "$default"
+        Target: !Sub /integrations/${APIIntegration}
+  APIIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref API
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03/31/functions/${Handler}/invocations # The path of the lambda
+      CredentialsArn: !GetAtt APIIntegrationRole.Arn
+  APIIntegrationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path:
+      AssumeRolePolicyDocument: 
+      Policies:
+        -
+          PolicyName: CloudWatchLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                  - logs:GetLogEvents
+                  - logs:FilterLogEvents
+                Resource: "*"
+        -
+          PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt Handler.Arn
+
+  Handler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fake-artist
+      CodeUri: ../server
+      Handler: index.handler
+      Policies:
+        - 
+          PolicyName: ExecuteApi
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - execute-api:Invoke
+                  - execute-api:ManageConnections
+                Resource: !GetAtt API.Arn
+        - 
+          PolicyName: CloudWatchLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - 
+                Effect: Allow
+                Action: 
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:GetLogEvents
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*
+
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - 
+          attribute definition
+      GlobalSecondaryIndexes:
+        - 
+          global secondary indexes
+      LocalSecondaryIndexes:
+        - 
+          local secondary indexes
+      KeySchema:
+        - 
+          key schema
+      ProvisionedThroughput: 
+      TableName: 
+      Tags:
+        - Key: key
+          Value: value

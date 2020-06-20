@@ -21,8 +21,8 @@
     "type": "git",
     "url": "git+https://github.com/adamjc/fake-artist.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "adamjc",
+  "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/adamjc/fake-artist/issues"
   },
