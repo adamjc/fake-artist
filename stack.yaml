@@ -40,7 +40,6 @@ Resources:
       ApiId: !Ref API
       IntegrationId: !Ref APIIntegration
       IntegrationResponseKey: /*/
-
   APIIntegrationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -86,7 +85,6 @@ Resources:
       StageName: prod
       ApiId: !Ref API
       AutoDeploy: True
-      
 
   Handler:
     Type: AWS::Serverless::Function
