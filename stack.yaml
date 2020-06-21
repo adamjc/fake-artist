@@ -15,26 +15,45 @@ Resources:
     Properties:
       Name: Fake-Artist-API
       ProtocolType: WEBSOCKET
-      RouteSelectionExpress: $request.body.message
+      RouteSelectionExpression: $request.body.message
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
-      Properties:
-        ApiId: !Ref API
-        ApiKeyRequired: False
-        RouteKey: "$default"
-        Target: !Sub /integrations/${APIIntegration}
+    Properties:
+      ApiId: !Ref API
+      ApiKeyRequired: False
+      RouteKey: "$default"
+      Target: !Sub integrations/${APIIntegration}
   APIIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref API
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03/31/functions/${Handler}/invocations # The path of the lambda
+      IntegrationUri: 
+        # The path of the lambda, see: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-custom-integrations.html
+        !Sub 
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HandlerArn}/invocations 
+          - { HandlerArn: !GetAtt Handler.Arn }
       CredentialsArn: !GetAtt APIIntegrationRole.Arn
+  APIIntegrationResponse:
+    Type: AWS::ApiGatewayV2::IntegrationResponse
+    Properties:
+      ApiId: !Ref API
+      IntegrationId: !Ref APIIntegration
+      IntegrationResponseKey: /*/
+
   APIIntegrationRole:
     Type: AWS::IAM::Role
     Properties:
-      Path:
-      AssumeRolePolicyDocument: 
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "apigateway.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
       Policies:
         -
           PolicyName: CloudWatchLogs
@@ -61,56 +80,84 @@ Resources:
                 Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource: !GetAtt Handler.Arn
+  APIStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: prod
+      ApiId: !Ref API
+      AutoDeploy: True
+      
 
   Handler:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: fake-artist
-      CodeUri: ../server
+      Runtime: nodejs12.x
+      InlineCode: |
+        const AWS = require('aws-sdk')
+        exports.handler = async event => {
+          console.log(event.body)
+          return {
+            "statusCode": 200,
+            "body": event.body
+          }
+        }
       Handler: index.handler
       Policies:
-        - 
-          PolicyName: ExecuteApi
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              -
-                Effect: Allow
-                Action:
-                  - execute-api:Invoke
-                  - execute-api:ManageConnections
-                Resource: !GetAtt API.Arn
-        - 
-          PolicyName: CloudWatchLogs
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - 
-                Effect: Allow
-                Action: 
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:GetLogEvents
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*
+        -
+          Statement:
+            - 
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+                - dynamodb:PutItem
+              Resource: !GetAtt Table.Arn
+        -
+          Statement:
+            -
+              Effect: Allow
+              Action:
+                - execute-api:Invoke
+                - execute-api:ManageConnections
+              Resource: arn:aws:execute-api:*:*:*
+        -
+          Statement:
+            - 
+              Effect: Allow
+              Action: 
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:GetLogEvents
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
 
   Table:
     Type: AWS::DynamoDB::Table
     Properties:
+      TableName: fake-artist
+      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - 
-          attribute definition
+          AttributeName: connection_id
+          AttributeType: S
+        -
+          AttributeName: room_id
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: connection_id
+          KeyType: HASH
       GlobalSecondaryIndexes:
         - 
-          global secondary indexes
-      LocalSecondaryIndexes:
-        - 
-          local secondary indexes
-      KeySchema:
-        - 
-          key schema
-      ProvisionedThroughput: 
-      TableName: 
+          IndexName: room_id-index
+          KeySchema:
+            -
+              AttributeName: room_id
+              KeyType: HASH
+          Projection: 
+            ProjectionType: ALL
       Tags:
-        - Key: key
-          Value: value
+        - Key: project
+          Value: fake-artist
