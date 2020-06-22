@@ -4,7 +4,7 @@ const db = new Dynamo.DocumentClient()
 exports.handler = async event => {
   console.log(event)
   // handle disconnect
-  if (event.requestContext.eventType === 'disconnect') {
+  if (event.requestContext.eventType === 'DISCONNECT') {
     // remove connection from db
     const params = {
       TableName: 'fake-artist',
