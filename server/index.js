@@ -13,7 +13,7 @@ exports.handler = async event => {
       }
     }
 
-    await db.delete(params)
+    await db.delete(params).promise()
 
     return {
       statusCode: 200,
@@ -35,7 +35,7 @@ exports.handler = async event => {
       }
     }
     // putItem in db 'connection_id', 'room_id'
-    await db.put(params)
+    await db.put(params).promise()
     // return to host what room_id is
     return {
       statusCode: 200,
