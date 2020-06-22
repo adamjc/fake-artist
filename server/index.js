@@ -10,7 +10,7 @@ exports.handler = async event => {
     const params = {
       TableName: 'fake-artist',
       Key: {
-        HashKey: connectionId
+        connection_id: connectionId
       }
     }
 
