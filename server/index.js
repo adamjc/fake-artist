@@ -8,8 +8,8 @@ exports.handler = async event => {
     // remove connection from db
     const params = {
       TableName: 'fake-artist',
-      Item: {
-        connection_id: event.requestContext.messageId
+      Key: {
+        HashKey: connection_id
       }
     }
 
