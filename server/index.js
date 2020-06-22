@@ -3,7 +3,7 @@ const db = new Dynamo.DocumentClient()
 
 exports.handler = async event => {
   console.log(event)
-  const connectionId = event.requestContext.requestId
+  const connectionId = event.requestContext.connectionId
   // handle disconnect
   if (event.requestContext.eventType === 'DISCONNECT') {    
     // remove connection from db
