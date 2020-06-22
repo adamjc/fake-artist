@@ -110,6 +110,7 @@ Resources:
                 - dynamodb:Query
                 - dynamodb:UpdateItem
                 - dynamodb:PutItem
+                - dynamodb:DeleteItem
               Resource: !GetAtt Table.Arn
         -
           Statement:
