@@ -28,7 +28,7 @@ Resources:
     Properties:
       ApiId: !Ref API
       ApiKeyRequired: False
-      RouteKey: "$default"
+      RouteKey: "$disconnect"
       Target: !Sub integrations/${APIIntegration}
   APIIntegration:
     Type: AWS::ApiGatewayV2::Integration
