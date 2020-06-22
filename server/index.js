@@ -2,6 +2,7 @@ const Dynamo = require('aws-sdk/clients/dynamodb')
 const db = new Dynamo.DocumentClient()
 
 exports.handler = async event => {
+  console.log(event)
   // handle disconnect
   if (event.requestContext.eventType === 'disconnect') {
     // remove connection from db
