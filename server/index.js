@@ -57,6 +57,7 @@ exports.handler = async event => {
       }
     }
     const peers = await db.query(query)
+    console.log(peers)
     
     const params = {
       TableName: 'fake-artist',
