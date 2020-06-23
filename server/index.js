@@ -25,19 +25,12 @@ exports.handler = async event => {
     }
   }
 
-  const { messageType, data } = JSON.parse(event.body)
+  const { messageType, message } = JSON.parse(event.body)
   
   if (messageType === 'host') {
-    const roomId = Math.random().toString(36).substring(2, 6)
-    
-    const params = {
-      TableName: 'fake-artist',
-      Item: {
-        connection_id: connectionId,
-        room_id: roomId
-      }
-    }
+    const roomId = Math.random().toString(36).substring(2, 6).toUpperCase()
 
+    await joinRoom(connectionId, roomId)
     await db.put(params).promise()
 
     return {
@@ -47,34 +40,7 @@ exports.handler = async event => {
   }
 
   if (messageType === 'join') {
-    const roomId = data.roomId
-    const query = {
-      TableName: 'fake-artist',
-      IndexName: 'room_id-index',
-      KeyConditionExpression: 'room_id = :roomId',
-      ExpressionAttributeValues: {
-        ':roomId': roomId
-      }
-    }
-    const { Items: peers } = await db.query(query).promise()
-    console.log(peers)
-    
-    const params = {
-      TableName: 'fake-artist',
-      Item: {
-        connection_id: connectionId,
-        room_id: roomId
-      }
-    }
-    await db.put(params).promise()
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        roomId,
-        peers
-      })
-    }
+    return join(connectionId, message)
   }
 
   if (messageType === 'vote' ) {
@@ -82,11 +48,74 @@ exports.handler = async event => {
   }
 
   if (messageType === 'signal' ) {
-    // signal this data onto everyone in the room_id the connection_id is in
+    return signal(connectionId, message)
   }
 
   return {
     statusCode: 200,
     body: `you sent: ${event.body}`
   }
+}
+
+// forwards on signalling data to peer specified
+async function signal (connectionId, { peer, data }) {
+  return api.postToConnection({
+    ConnectionId: connectionId,
+    Data: {
+      peer,
+      data
+    }
+  })
+}
+
+async function join (connectionId, roomId) {
+  const players = getPlayers(roomId)
+
+  if (!players.length) return res(404)
+
+  await broadcast(players, connectionId)
+  await joinRoom(connectionId, roomId)
+
+  return res(200, { roomId, players })
+}
+
+function res (statusCode, payload) {
+  return {
+    statusCode,
+    body: payload ? JSON.stringify(payload) : null
+  }
+}
+
+// broadcast `data` to all `players`
+async function broadcast (players, data) {
+  return Promise.all(
+    players.map(player => api.postToConnection({ ConnectionId: player.connection_id, Data: data }))
+  )
+}
+
+// get players in room
+// roomid => [{ connection_id, room_id }]
+async function getPlayers (roomId) {
+  const query = {
+    TableName: 'fake-artist',
+    IndexName: 'room_id-index',
+    KeyConditionExpression: 'room_id = :roomId',
+    ExpressionAttributeValues: {
+      ':roomId': roomId
+    }
+  }
+  const { Items: peers } = await db.query(query).promise()
+
+  return peers
+}
+
+async function joinRoom (connectionId, roomId) {
+  const params = {
+    TableName: 'fake-artist',
+    Item: {
+      connection_id: connectionId,
+      room_id: roomId
+    }
+  }
+  return db.put(params).promise()
 }
