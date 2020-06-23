@@ -91,7 +91,7 @@ function res (statusCode, payload) {
 // broadcast `data` to all `players`
 async function broadcast (players, data) {
   return Promise.all(
-    players.map(player => api.postToConnection({
+    players.map(async player => await api.postToConnection({
       ConnectionId: player.connection_id, 
       Data: data 
     }))
