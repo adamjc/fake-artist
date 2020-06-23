@@ -62,6 +62,7 @@ async function signal (connectionId, { peer, data }) {
   return api.postToConnection({
     ConnectionId: connectionId,
     Data: {
+      messageType: 'signal',
       peer,
       data
     }
@@ -73,7 +74,7 @@ async function join (connectionId, roomId) {
 
   if (!players.length) return res(404)
 
-  await broadcast(players, connectionId)
+  await broadcast(players, { messageType: 'new_player', connectionId })
   await joinRoom(connectionId, roomId)
 
   return res(200, { roomId, players })
@@ -89,7 +90,10 @@ function res (statusCode, payload) {
 // broadcast `data` to all `players`
 async function broadcast (players, data) {
   return Promise.all(
-    players.map(player => api.postToConnection({ ConnectionId: player.connection_id, Data: data }))
+    players.map(player => api.postToConnection({
+      ConnectionId: player.connection_id, 
+      Data: data 
+    }))
   )
 }
 
