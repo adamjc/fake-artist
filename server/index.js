@@ -71,7 +71,7 @@ async function signal (connectionId, { peer, data }) {
 }
 
 async function join (connectionId, roomId) {
-  const players = getPlayers(roomId)
+  const players = await getPlayers(roomId)
 
   if (!players.length) return res(404)
 
