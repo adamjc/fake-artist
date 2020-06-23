@@ -1,5 +1,8 @@
+const AWS = require('aws-sdk')
 const Dynamo = require('aws-sdk/clients/dynamodb')
+
 const db = new Dynamo.DocumentClient()
+const api = new AWS.ApiGatewayManagementApi()
 
 exports.handler = async event => {
   console.log(event)
@@ -25,7 +28,6 @@ exports.handler = async event => {
   const { messageType, data } = JSON.parse(event.body)
   
   if (messageType === 'host') {
-    // generate random room_id
     const roomId = Math.random().toString(36).substring(2, 6)
     
     const params = {
@@ -35,19 +37,43 @@ exports.handler = async event => {
         room_id: roomId
       }
     }
-    // putItem in db 'connection_id', 'room_id'
+
     await db.put(params).promise()
-    // return to host what room_id is
+
     return {
       statusCode: 200,
-      body: `joined room: ${roomId}`
+      body: roomId
     }
   }
 
   if (messageType === 'join') {
-    // putItem in db 'connection_id', 'room_id'
-    // query GSI for members in 'room_id'
-    // return to joiner who is in 'room_id'
+    const roomId = data.roomId
+    const query = {
+      TableName: 'fake-artist',
+      IndexName: 'room_id-index',
+      KeyConditionExpression: 'room_id = :roomId',
+      ExpressionAttributeValues: {
+        ':roomId': roomId
+      }
+    }
+    const peers = await db.query(query)
+    
+    const params = {
+      TableName: 'fake-artist',
+      Item: {
+        connection_id: connectionId,
+        room_id: roomId
+      }
+    }
+    await db.put(params).promise()
+
+    return {
+      statusCode: 200,
+      body: {
+        roomId,
+        peers
+      }
+    }
   }
 
   if (messageType === 'vote' ) {
