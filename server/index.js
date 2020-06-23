@@ -90,12 +90,13 @@ function res (statusCode, payload) {
 
 // broadcast `data` to all `players`
 async function broadcast (players, data) {
-  return Promise.all(
-    players.map(async player => await api.postToConnection({
-      ConnectionId: player.connection_id, 
-      Data: data 
-    }))
-  )
+  console.log(`broadcasting to ${players}`)
+  const reqs = players.map(player => api.postToConnection({
+    ConnectionId: player.connection_id, 
+    Data: data 
+  }))
+  console.log('reqs: ', reqs)
+  return Promise.all(reqs)
 }
 
 // get players in room
