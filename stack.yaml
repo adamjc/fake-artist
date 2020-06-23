@@ -111,7 +111,11 @@ Resources:
                 - dynamodb:UpdateItem
                 - dynamodb:PutItem
                 - dynamodb:DeleteItem
-              Resource: !GetAtt Table.Arn
+              Resource: 
+                - !GetAtt Table.Arn
+                - !Sub
+                  - ${TableArn}/index/room_id-index
+                  - { TableArn: !GetAtt Table.Arn }
         -
           Statement:
             -
