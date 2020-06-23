@@ -93,7 +93,7 @@ async function broadcast (players, data) {
   console.log(`broadcasting to ${players}`)
   const reqs = players.map(player => api.postToConnection({
     ConnectionId: player.connection_id, 
-    Data: data 
+    Data: JSON.stringify(data)
   }).promise())
   console.log('reqs: ', reqs)
   return Promise.all(reqs)
