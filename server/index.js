@@ -31,7 +31,6 @@ exports.handler = async event => {
     const roomId = Math.random().toString(36).substring(2, 6).toUpperCase()
 
     await joinRoom(connectionId, roomId)
-    await db.put(params).promise()
 
     return {
       statusCode: 200,
