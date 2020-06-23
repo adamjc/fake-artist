@@ -26,6 +26,8 @@ exports.handler = async event => {
   }
 
   const { messageType, message } = JSON.parse(event.body)
+  console.log(`messageType: ${JSON.stringify(messageType, null, 2)}`)
+  console.log(`message: ${JSON.stringify(message, null, 2)}`)
   
   if (messageType === 'host') {
     const roomId = Math.random().toString(36).substring(2, 6).toUpperCase()
