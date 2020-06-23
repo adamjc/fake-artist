@@ -1,4 +1,5 @@
 function hostHandler () {
+  console.log('hosting a game...')
   connect()
 }
 
@@ -8,20 +9,20 @@ function joinHandler () {
 }
 
 function connect (roomId) {
+  console.log('connect')
   const ws = new WebSocket('wss://md04bdl83m.execute-api.eu-west-1.amazonaws.com/prod')
   ws.onopen = _ => {
+    console.log('websocket opened')
     if (roomId) {
-      ws.send({
-        messageType: 'join',
-        message: roomId
-      })
+      ws.send(msg('join', roomId))
     } else {
-      ws.send({
-        messageType: 'host'
-      })
+      ws.send(msg('host'))
     }
   }
+  ws.onmessage = messageHandler
 }
+
+const msg = (messageType, message) => JSON.stringify({ messageType, message })
 
 function messageHandler (message) {
   console.log(message)
