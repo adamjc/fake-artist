@@ -56,7 +56,7 @@ exports.handler = async event => {
         ':roomId': roomId
       }
     }
-    const peers = await db.query(query)
+    const { Items: peers } = await db.query(query).promise()
     console.log(peers)
     
     const params = {
