@@ -69,10 +69,10 @@ exports.handler = async event => {
 
     return {
       statusCode: 200,
-      body: {
+      body: JSON.stringify({
         roomId,
         peers
-      }
+      })
     }
   }
 
