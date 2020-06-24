@@ -77,7 +77,7 @@ async function join (connectionId, roomId) {
 
   if (!players.length) return res(404)
 
-  await broadcast(players, { messageType: 'new_player', connectionId })
+  await broadcast(players, { messageType: 'new-player', connectionId })
   await joinRoom(connectionId, roomId)
 
   return res(200, { messageType: 'joining', roomId, players })
