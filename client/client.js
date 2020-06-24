@@ -27,7 +27,9 @@ function connect (roomId) {
 
 const msg = (messageType, message) => JSON.stringify({ messageType, message })
 
-function messageHandler (message) {
+function messageHandler ({ data }) {
+  console.log(data)
+  const { messageType, ...message } = JSON.parse(data)
   console.log(message)
 }
 

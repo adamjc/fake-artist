@@ -11,8 +11,9 @@ exports.handler = async event => {
     apiVersion: '2018-11-29',
     endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
   })
-  
+
   const connectionId = event.requestContext.connectionId
+
   // handle disconnect
   if (event.requestContext.eventType === 'DISCONNECT') {    
     // remove connection from db
@@ -32,18 +33,13 @@ exports.handler = async event => {
   }
 
   const { messageType, message } = JSON.parse(event.body)
-  console.log(`messageType: ${JSON.stringify(messageType, null, 2)}`)
-  console.log(`message: ${JSON.stringify(message, null, 2)}`)
   
   if (messageType === 'host') {
     const roomId = Math.random().toString(36).substring(2, 6).toUpperCase()
 
     await joinRoom(connectionId, roomId)
 
-    return {
-      statusCode: 200,
-      body: roomId
-    }
+    return res(200, { messageType: 'hosting', roomId } )
   }
 
   if (messageType === 'join') {
@@ -84,7 +80,7 @@ async function join (connectionId, roomId) {
   await broadcast(players, { messageType: 'new_player', connectionId })
   await joinRoom(connectionId, roomId)
 
-  return res(200, { roomId, players })
+  return res(200, { messageType: 'joining', roomId, players })
 }
 
 function res (statusCode, payload) {
