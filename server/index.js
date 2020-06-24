@@ -2,10 +2,16 @@ const AWS = require('aws-sdk')
 const Dynamo = require('aws-sdk/clients/dynamodb')
 
 const db = new Dynamo.DocumentClient()
-const api = new AWS.ApiGatewayManagementApi()
+let api
 
 exports.handler = async event => {
   console.log(event)
+  
+  api = new AWS.ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`
+  })
+  
   const connectionId = event.requestContext.connectionId
   // handle disconnect
   if (event.requestContext.eventType === 'DISCONNECT') {    
