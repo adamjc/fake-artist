@@ -62,7 +62,7 @@ function handleSignal ({ connectionId, data }) {
   if (!pc) {
     const peer = new SimplePeer({ initiator: false, trickle: false })
     peer.signal(data)
-    peer.on('signal', data => ws.send(msg('signal', data)))
+    peer.on('signal', data => ws.send(msg('signal', { remoteId: peer.connectionId, data})))
     peer.on('connect', console.log)
     peer.on('data', console.log)
   } else {
@@ -81,6 +81,7 @@ function createPeers (players) {
     peer.on('connect', console.log)
     peer.on('data', console.log)
 
+    console.log(`signalling ${player.connection_id}`)
     return {
       connectionId: player.connection_id,
       peer
