@@ -69,7 +69,7 @@ async function signal (connectionId, { peer, data }) {
       connectionId,
       data
     }
-  })
+  }).promise()
 }
 
 async function join (connectionId, roomId) {
@@ -92,12 +92,12 @@ function res (statusCode, payload) {
 
 // broadcast `data` to all `players`
 async function broadcast (players, data) {
-  console.log(`broadcasting to ${players}`)
+  console.log(`broadcasting`)
   const reqs = players.map(player => api.postToConnection({
     ConnectionId: player.connection_id, 
     Data: JSON.stringify(data)
   }).promise())
-  console.log('reqs: ', reqs)
+
   return Promise.all(reqs)
 }
 
