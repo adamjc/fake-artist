@@ -51,7 +51,8 @@ exports.handler = async event => {
   }
 
   if (messageType === 'signal' ) {
-    return signal(connectionId, message)
+    await signal(connectionId, message)
+    return res(200, 'signalling data sent')
   }
 
   return {
@@ -62,6 +63,7 @@ exports.handler = async event => {
 
 // forwards on signalling data to peer specified
 async function signal (connectionId, { peer, data }) {
+  console.log('signalling to ${peer.connection_id')
   return api.postToConnection({
     ConnectionId: peer.connection_id,
     Data: {
