@@ -46,10 +46,6 @@ exports.handler = async event => {
     return join(connectionId, message)
   }
 
-  if (messageType === 'vote' ) {
-    // ...
-  }
-
   if (messageType === 'signal' ) {
     await signal(connectionId, message)
     return res(200, 'signalling data sent')
@@ -85,6 +81,7 @@ async function join (connectionId, roomId) {
   return res(200, { messageType: 'joining', roomId, players })
 }
 
+// Returns a response object for the client
 function res (statusCode, payload) {
   return {
     statusCode,
