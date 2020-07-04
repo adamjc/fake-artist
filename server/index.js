@@ -53,7 +53,7 @@ exports.handler = async event => {
 
   return {
     statusCode: 200,
-    body: `you sent: ${event.body}`
+    body: `you sent an unhandled message`
   }
 }
 
