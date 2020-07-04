@@ -15,7 +15,7 @@ Resources:
     Properties:
       Name: Fake-Artist-API
       ProtocolType: WEBSOCKET
-      RouteSelectionExpression: $request.body.message
+      RouteSelectionExpression: $request.body.messageType
   DefaultRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
