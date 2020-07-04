@@ -62,11 +62,11 @@ async function signal (connectionId, { remoteId, data }) {
   console.log(`signalling to ${remoteId}`)
   return api.postToConnection({
     ConnectionId: remoteId,
-    Data: {
+    Data: JSON.stringify({
       messageType: 'signal',
       connectionId,
       data
-    }
+    })
   }).promise()
 }
 
