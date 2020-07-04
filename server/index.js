@@ -24,7 +24,13 @@ exports.handler = async event => {
       }
     }
 
+    const roomId = await getRoom(connectionId)
+    const players = await getPlayers(roomId)
     await db.delete(params).promise()
+    await broadcast(players, {
+      messageType: 'disconnection',
+      connectionId
+    })
 
     return {
       statusCode: 200,
@@ -111,6 +117,7 @@ async function getPlayers (roomId) {
       ':roomId': roomId
     }
   }
+
   const { Items: peers } = await db.query(query).promise()
 
   return peers
@@ -124,5 +131,20 @@ async function joinRoom (connectionId, roomId) {
       room_id: roomId
     }
   }
+
   return db.put(params).promise()
+}
+
+async function getRoom (connectionId) {
+  const query = {
+    TableName: 'fake-artist',
+    KeyConditionExpression: 'connection_id = :connectionId',
+    ExpressionAttributeValues: {
+      ':connectionId': connectionId
+    }
+  }
+
+  const { Items: peers } = await db.query(query).promise()
+
+  return peers[0].room_id
 }
