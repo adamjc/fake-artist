@@ -84,10 +84,14 @@ function createPeer (remoteId, initiator = false) {
   peer.on('signal', data => ws.send(msg('signal', { remoteId, data })))
   peer.on('connect', _ => console.log('peer connect'))
 
-  peer.on('data', e => {
-    const message = document.createElement('div')
-    message.innerHTML = e
-    document.getElementById('message__response').appendChild(message)
+  peer.on('data', data => {
+    const { messageType, message } = JSON.parse(data)
+    if (messageType === 'line') {
+      game.events.emit('line', message)
+    }
+    // const message = document.createElement('div')
+    // message.innerHTML = e
+    // document.getElementById('message__response').appendChild(message)
   })
 
   return peer
@@ -103,20 +107,30 @@ function sendMessage() {
   peers.forEach(peer => peer.peer.send(msg))
 }
 
-function game () {
+function startGame () {
   let drawing = false
   let line
   let graphics
-  
+  let timeout
+  let lines = []
+  let updates = []
   function preload () {
-    
   }
 
   function create () {
-    graphics = this.add.graphics({ lineStyle: { width: 4, color: 0xaa00aa } })
-  }
+    timeout = setInterval(() => {
+      if (lines.length) {
+        peers.forEach(peer => {
+          const data = msg('line', lines)
+          peer.peer.send(data)
+        })
+      }
 
-  function update () {
+      lines = []
+    }, 75)
+    line = new Phaser.Geom.Line()
+    graphics = this.add.graphics({ lineStyle: { width: 4, color: 0xaa00aa } })
+
     this.input.on('pointerdown', () => {
       drawing = true
     })
@@ -127,19 +141,32 @@ function game () {
 
     this.input.on('pointermove', () => {
       const { x: prevX, y: prevY } = this.input.activePointer.prevPosition
-      
       const { x, y } = this.input.activePointer.position
+
       if (drawing) {
-        // TODO: make performant (e.g. don't create a new line every time, just store x,y in array???)
-        line = new Phaser.Geom.Line(prevX, prevY, x, y);
-        graphics.strokeLineShape(line);
+        line.setTo(prevX, prevY, x, y)
+        lines.push({prevX, prevY, x, y})
+        graphics.strokeLineShape(line)
       }
     })
+
+    game.events.on('line', e => {
+      updates = e
+    })
+  }
+
+  function update () {
+    if (updates.length) {
+      updates.forEach(({prevX, prevY, x, y}) => {
+        line.setTo(prevX, prevY, x, y)
+        graphics.strokeLineShape(line)
+      })
+      updates = []
+    }
   }
 
   const config = {
     type: Phaser.AUTO,
-    // backgroundColor: 0xFFFFFF,
     width: 800,
     height: 600,
     scene: {
@@ -149,7 +176,7 @@ function game () {
     }
   }
 
-  const game = new Phaser.Game(config)
+  return new Phaser.Game(config)
 }
 
-game()
+const game = startGame()
