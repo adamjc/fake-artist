@@ -102,3 +102,54 @@ function sendMessage() {
   const msg = document.getElementById('message').value
   peers.forEach(peer => peer.peer.send(msg))
 }
+
+function game () {
+  let drawing = false
+  let line
+  let graphics
+  
+  function preload () {
+    
+  }
+
+  function create () {
+    graphics = this.add.graphics({ lineStyle: { width: 4, color: 0xaa00aa } })
+  }
+
+  function update () {
+    this.input.on('pointerdown', () => {
+      drawing = true
+    })
+
+    this.input.on('pointerup', () => {
+      drawing = false
+    })
+
+    this.input.on('pointermove', () => {
+      const { x: prevX, y: prevY } = this.input.activePointer.prevPosition
+      
+      const { x, y } = this.input.activePointer.position
+      if (drawing) {
+        // TODO: make performant (e.g. don't create a new line every time, just store x,y in array???)
+        line = new Phaser.Geom.Line(prevX, prevY, x, y);
+        graphics.strokeLineShape(line);
+      }
+    })
+  }
+
+  const config = {
+    type: Phaser.AUTO,
+    // backgroundColor: 0xFFFFFF,
+    width: 800,
+    height: 600,
+    scene: {
+      preload,
+      create,
+      update
+    }
+  }
+
+  const game = new Phaser.Game(config)
+}
+
+game()
