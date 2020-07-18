@@ -28,6 +28,7 @@ function messageHandler ({ data }) {
   
   switch (messageType) {
     case 'hosting':
+      showRoom(message.roomId)
       // we are hosting the game
       return 
     case 'signal':
@@ -35,6 +36,7 @@ function messageHandler ({ data }) {
       handleSignal(message)
       return
     case 'joining':
+      showRoom(message.roomId)
       // make a webrtc connection for every peer we receive in `message`
       peers = peers.concat(createPeers(message.players))
       return
@@ -180,3 +182,12 @@ function startGame () {
 }
 
 const game = startGame()
+
+function showRoom (id) {
+  console.log(id)
+  const content = `Room ID: ${id}`
+  const div = document.createElement('div')
+  div.innerHTML = content
+  console.log(document.getElementById('body'))
+  document.getElementById('body').prepend(div)
+}
