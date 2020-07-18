@@ -18,12 +18,21 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    - name: Upload Static Content to GitHub Pages
+      uses: s0/git-publish-subdir-action@v2.3.0
+      env:
+        REPO: self
+        BRANCH: gh-pages
+        FOLDER: client
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
+
     - name: Build & Upload Artifacts
       run: |-
         aws cloudformation package \
