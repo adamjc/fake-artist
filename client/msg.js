@@ -1,0 +1,1 @@
+export default (messageType, message) => JSON.stringify({ messageType, message })

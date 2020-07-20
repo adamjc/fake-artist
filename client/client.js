@@ -1,26 +1,26 @@
-let peers = []
-let ws
+import { connect, createPeer, createPeers, removePeer } from './networking.js'
+import Phaser from 'phaser'
+import msg from './msg.js'
 
+
+let peers = []
 function hostHandler () {
-  ws = connect()
+  connect(messageHandler)
 }
 
 function joinHandler () {
   const roomId = document.getElementById('roomId').value
   
-  ws = connect(roomId)
+  connect(messageHandler, roomId)
 }
 
-function connect (roomId) {
-  ws = new WebSocket('wss://md04bdl83m.execute-api.eu-west-1.amazonaws.com/prod')
-  ws.onmessage = messageHandler
-  ws.onopen = _ => roomId ? ws.send(msg('join', roomId)) : ws.send(msg('host'))
-  ws.onerror = e => console.log(`Web Socket error: ${JSON.stringify(e)}`)
+function dataHandler (data) {
+  const { messageType, message } = JSON.parse(data)
 
-  return ws
+  if (messageType === 'line') {
+    game.events.emit('line', message)
+  }
 }
-
-const msg = (messageType, message) => JSON.stringify({ messageType, message })
 
 function messageHandler ({ data }) {
   console.log('messageHandler', data)
@@ -38,26 +38,24 @@ function messageHandler ({ data }) {
     case 'joining':
       showRoom(message.roomId)
       // make a webrtc connection for every peer we receive in `message`
-      peers = peers.concat(createPeers(message.players))
+      peers = peers.concat(createPeers(message.players, dataHandler))
       return
     case 'new-player':
       // a new player has entered the game
       return
     case 'disconnection':
       // a player has left the game
-      peers = removePeer(message.connectionId)
+      peers = removePeer(peers, message.connectionId)
       return
   }
 }
-
-const removePeer = connectionId => peers.filter(peer => peer.connectionId !== connectionId)
 
 // connectionId: this is the connectionId of the remote peer we want to establish a webrtc connection with
 // data: this is the 'description' of the remote peer
 function handleSignal ({ connectionId, data }) {
   let pc = peers.filter(peer => peer.connectionId === connectionId)[0]
   if (!pc) {
-    const peer = createPeer(connectionId)
+    const peer = createPeer(connectionId, dataHandler)
     
     peer.signal(data)
     
@@ -66,37 +64,6 @@ function handleSignal ({ connectionId, data }) {
     console.log('found peer!', pc)
     pc.peer.signal(data)
   }
-}
-
-// players = [{ 'connection_id', 'room_id' }]
-function createPeers (players) {
-  return players.map(player => {
-    const peer = createPeer(player.connection_id, { initiator: true })
-
-    return {
-      connectionId: player.connection_id,
-      peer
-    }
-  })
-}
-
-function createPeer (remoteId, initiator = false) {
-  const peer = new SimplePeer({ initiator })
-
-  peer.on('signal', data => ws.send(msg('signal', { remoteId, data })))
-  peer.on('connect', _ => console.log('peer connect'))
-
-  peer.on('data', data => {
-    const { messageType, message } = JSON.parse(data)
-    if (messageType === 'line') {
-      game.events.emit('line', message)
-    }
-    // const message = document.createElement('div')
-    // message.innerHTML = e
-    // document.getElementById('message__response').appendChild(message)
-  })
-
-  return peer
 }
 
 document.getElementById('host').addEventListener('click', hostHandler)
