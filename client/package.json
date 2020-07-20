@@ -5,6 +5,7 @@
   "main": "client.js",
   "scripts": {
     "start": "parcel watch --public-url ./ --no-hmr index.html",
+    "build": "parcel build --public-url ./ index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

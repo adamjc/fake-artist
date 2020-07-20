@@ -18,12 +18,17 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    - name: Build Static Content
+      run: |-
+        cd client
+        npm i
+        npm run build
     - name: Upload Static Content to GitHub Pages
       uses: s0/git-publish-subdir-action@v2.3.0
       env:
         REPO: self
         BRANCH: gh-pages
-        FOLDER: client
+        FOLDER: client/dist
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Configure AWS Credentials
