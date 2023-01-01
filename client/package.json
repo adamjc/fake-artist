@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "browserify-rsa": "^4.0.1",
-    "parcel": "^1.12.4",
+    "parcel": "^2.8.2",
     "phaser": "^3.24.1",
     "simple-peer": "^9.7.2"
   }
